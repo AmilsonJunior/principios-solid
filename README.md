@@ -89,4 +89,69 @@ class IT extends Employee {
 ```
 
 ## OCP: Open-Closed Principle
-<img src="http://brendan.enrick.com/image.axd?picture=OpenClosedPrinciple_thumb.jpg"/>
+<img src="https://miro.medium.com/max/1400/1*SpU6T6Zr6OjeD4utxvZzQQ.jpeg"/>
+
+Considerado o princípio mais importante do design de orientação a objeto, basicamente, o OCP nos diz que:
+
+> Um artefato de software deve ser aberto para extensão, mas fechado para modificação.
+
+Em geral, este princípio é apenas sobre escrever seu codigo de uma maneira que quando você precisar adicionar uma nova funcionalidade, não vai ser necessário alterar um código existente.
+
+Para fazer isso, escrevemos interfaces e classes abstratas para ditar a política de nível superior que precisa ser implementada e, em seguida, implementamos essa política usando classes concretas.
+
+
+Vamos supor que tenhamos que desenvolver uma integração para envio de email utilizando a SendGrid. Então, desenvolvemos uma classe concreta conectando-se com a API da SendGrid:
+
+```typescript
+class SendGridService {
+    constructor (
+      private readonly sendgridInstance: SendGridInstance
+    ) { }
+
+    sendMail (from, to, body) {
+        // format the mail object to the sendgrid api shape
+        // send it
+        // create a result object 
+        // return the result (success, failure, bounded, etc)
+    }
+}
+
+```
+
+Alguns meses depois, surge a necessidade de fazer uma alteração para substituir a SendGrid pela Mail Chimp.
+
+Então vamos criar uma class `MailChimpService` concreta. Mas para conectá-lo ao nosso código, teremos que mudar bastante coisas aonde é utilizado o envio de email.
+
+Como poderíamos projetar isso melhor?
+
+Seguindo o OCP, poderíamos definir uma interface que especifica o que um serviço de email pode fazer e deixar a implementação atual para ser descoberta separadamente.
+
+```typescript
+// IEmailService.ts
+export interface IMailServiceResult {
+    // ...
+}
+
+export interface Mail {
+    from: string
+    to: string
+    body: string
+}
+
+export interface IMailService {
+    sendMail(mail: Mail): Promise<IMailServiceResult>
+}
+
+// MailChimpService.ts
+export class MailChimpService extends IMailService {
+    public async sendMail(mail: Mail): Promise<IMailServiceResult> {
+        // Integração com a API da MailChimp
+    }
+}
+```
+
+A ideia principal é manter a política separada dos detalhes para permitir o acoplamento livre.
+
+> Os componentes de nível superior são protegidos contra alterações nos componentes de nível inferior.
+
+Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender de uma interface em vez de classes concretas, e perto com o LSP (Liskov Substitution Principle) em termos de poder trocar implementações desde que o mesmo tipo/interface esteja sendo dependente.
