@@ -108,11 +108,10 @@ class SendGridService {
       private readonly sendgridInstance: SendGridInstance
     ) { }
 
-    sendMail (from, to, body) {
-        // format the mail object to the sendgrid api shape
-        // send it
-        // create a result object 
-        // return the result (success, failure, bounded, etc)
+    public async sendMail(from: string, to: string, body: string): Promise<SendGridResult> {
+        // formata o input que a API da send grid aceita
+        // envia o email
+        // cria o objeto de resposta
     }
 }
 
@@ -155,3 +154,18 @@ A ideia principal é manter a política separada dos detalhes para permitir o ac
 > Os componentes de nível superior são protegidos contra alterações nos componentes de nível inferior.
 
 Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender de uma interface em vez de classes concretas, e perto com o LSP (Liskov Substitution Principle) em termos de poder trocar implementações desde que o mesmo tipo/interface esteja sendo dependente.
+
+## LSP: Liskov Substitution Principle
+
+<img src="https://thinkdifferent0.files.wordpress.com/2017/07/liskovsubtitutionprinciple_52bb5162.jpg"/>
+
+
+
+
+
+Referencias:
+https://khalilstemmler.com/articles/solid-principles/solid-typescript/
+
+https://wanago.io/2020/02/03/applying-solid-principles-to-your-typescript-code/
+
+https://thinkdifferent0.wordpress.com/2017/07/07/solid-lsp-liskov-substitution-principle/
