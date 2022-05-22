@@ -159,8 +159,64 @@ Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender 
 
 <img src="https://thinkdifferent0.files.wordpress.com/2017/07/liskovsubtitutionprinciple_52bb5162.jpg"/>
 
+O LSP afirma que em um programa orientado a objetos, se substituirmos uma referência de objeto da superclasse por um objeto de qualquer uma de suas subclasses, o programa não deve quebrar.
 
 
+Aproveitando o exemplo de Email Service, uma vez que já definimos o IMailService, podemos criar várias implementações de envio de email com provedores diferentes, seguindo a regra (Interface) IMailService:
+
+```typescript
+class SendGridEmailService implements IMailService {
+  sendMail(email: IMail): Promise<IEmailTransmissionResult> {
+    // algorithm
+  }
+}
+
+class MailChimpEmailService implements IMailService {
+  sendMail(email: IMail): Promise<IEmailTransmissionResult> {
+    // algorithm
+  }
+}
+
+class MailGunEmailService implements IMailService {
+  sendMail(email: IMail): Promise<IEmailTransmissionResult> {
+    // algorithm
+  }
+}
+```
+
+E então podemos injetar dependência em nossas classes, garantindo de que nos referimos à interface à qual ela pertence, em vez de injetar uma das implementações concretas.
+
+```typescript
+class CreateUserController extends BaseController {
+  constructor (private readonly emailService: IEmailService) { }
+
+  protected async execute(params): Promise<void> {
+    // handle request
+    
+    // send mail
+    const mail = new Mail({
+      // ...
+    })
+
+    await this.emailService.sendMail(mail);
+  }
+}
+```
+
+Agora, todas essas implementações são válidas:
+
+```typescript
+const mailGunService = new MailGunEmailService();
+const mailchimpService = new MailChimpEmailService();
+const sendgridService = new SendGridEmailService();
+
+// Todas são válidas:
+const createUserController = new CreateUserController(mailGunService);
+// ou
+const createUserController = new CreateUserController(mailchimpService);
+// ou
+const createUserController = new CreateUserController(sendgridService);
+```
 
 
 Referencias:
