@@ -1,10 +1,11 @@
-# SOLID
+# **SOLID**
 
 > Os príncipios SOLID nos dizem como organizar as funções e estruturas de dados em classes e como essas classes devem ser interconectadas.
 
 A palavra *classe* não implica em que esses principios sejam aplicáveis apenas ao paradigma de orientação a objetos. *classe* é apenas um agrupamento acoplado de funções e dados.
 
-## Objetivo
+#
+## **Objetivo**
 O objetivo dos princípios é a criação de estruturas de software de nivel médio que:
 
 - Tolerem mudanças;
@@ -15,8 +16,8 @@ O objetivo dos princípios é a criação de estruturas de software de nivel mé
 
 Bons sistemas começam com um código limpo. Por um lado, se os tijolos não são bem feitos, a arquitetura da construção perde a importancia. Por outro lado, podemos fazer uma bagunça considerável com tijolos bem feitos. É aí que entram os principios SOLID.
 
-
-## SRP: Single Responsibility Principle
+#
+## **SRP: Single Responsibility Principle**
 <img src="https://miro.medium.com/max/700/1*2lOJXH438qRn_KJpwzxTFw.png"/>
 
 De todos os princípios, o SRP provavelmente é o menos compreendido. 
@@ -88,7 +89,7 @@ class IT extends Employee {
 }
 ```
 
-## OCP: Open-Closed Principle
+## **OCP: Open-Closed Principle**
 <img src="https://miro.medium.com/max/1400/1*SpU6T6Zr6OjeD4utxvZzQQ.jpeg"/>
 
 Considerado o princípio mais importante do design de orientação a objeto, basicamente, o OCP nos diz que:
@@ -155,7 +156,8 @@ A ideia principal é manter a política separada dos detalhes para permitir o ac
 
 Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender de uma interface em vez de classes concretas, e perto com o LSP (Liskov Substitution Principle) em termos de poder trocar implementações desde que o mesmo tipo/interface esteja sendo dependente.
 
-## LSP: Liskov Substitution Principle
+#
+## **LSP: Liskov Substitution Principle**
 
 <img src="https://thinkdifferent0.files.wordpress.com/2017/07/liskovsubtitutionprinciple_52bb5162.jpg"/>
 
@@ -216,6 +218,142 @@ const createUserController = new CreateUserController(mailGunService);
 const createUserController = new CreateUserController(mailchimpService);
 // ou
 const createUserController = new CreateUserController(sendgridService);
+```
+
+Estamos aderindo ao LSP quando podemos trocar qual implementação de IEmailService estaremos usando.
+
+#
+
+## **ISP: Interface Segregation Principle**
+<img src="https://i1.wp.com/www.topjavatutorial.com/wp-content/uploads/2016/02/Interface-Segregation-Principle.jpg?w=750&ssl=1"/>
+
+> Classes não devem depender de coisas que elas não precisam.
+
+
+Para evitar isso, devemos nos certificar de realmente dividir a funcionalidade exclusiva em interfaces.
+
+Vamos supor que tenhamos 3 diferentes classes de *User* que utiliza 3 diferentes métodos da classe *Operations*, e para cada classe de *User*, nós estamos dependendo de duas funções que não precisamos. Exemplo:
+
+<img src="https://khalilstemmler.com/img/blog/solid/isp.svg"/>
+
+Parece não ser um problema tão grave, mas se precisarmos de injetar uma dependencia para cada função funcionar corretamente, teremos que injetar todas essas dependencias necessárias nas classes que não utilizam essas funções. Por exemplo, o constructor da classe Operations seria assim:
+
+```typescript
+class Operations {
+  constructor (
+    userRepo: IUserRepo, // Usada por todas funções
+    emailService: IEmailService,  // Usada apenas por uma das funções
+    authService: IAuthService, // Usada por duas funções
+    redisService: IRedisService, // Usada por todas funções
+    ... // e outros...  )
+
+  public op1() {
+    // ...
+  }
+
+  public op2() {
+    // ...
+  }
+
+  public op3() {
+    // ...
+  }
+}
+```
+
+E aplicando o ISP, esta estrutura ficaria assim:
+
+<img src="https://khalilstemmler.com/img/blog/solid/isp-2.svg"/>
+
+E agora, se era bastante complicado criar a classe Operations por conta que ela dependia de várias coisas, pegando a classe User1 como exemplo, nós seríamos capazes de criar uma classe que implementa SOMENTE da interface U1Ops.
+
+```typescript
+class User1Operations implements U1Ops {
+  constructor (private readonly userRepo: IUserRepo) { }
+  ...
+}
+```
+
+Agora a classe User1 depende apenas da classe User1Operations e não contém mais todo o "lixo" da classe Operations.
+
+
+#
+## **DIP: Dependency Inversion Principle**
+<img src="https://mkatkoot.files.wordpress.com/2013/06/dependency_inversion_principle.jpg"/>
+
+> Abstrações não devem depender de detalhes. Os detalhes devem depender das abstrações.
+
+Detalhes? Abstrações?
+
+Relembrando... Detalhes = Implementação, classes concretas. Abstrações = regras, interfaces, classes abstratas.
+
+Ou seja, em vez de fazer isso:
+
+```typescript
+interface ITacoService {
+  // Estamos referenciando a classe concreta "User" em uma interface.
+  sendTacos(userSource: User, userDestination: User, amount: number): Promise<SendTacosResult>
+}
+```
+
+Fazemos assim:
+
+```typescript
+interface ITacoService {
+  // nenhuma referencia a classes concretas, apenas abstrações e interfaces
+  sendTacos(userSource: IUser, userDestination: IUser, amount: number): Promise<ISendTacosResult>
+}
+```
+
+Classes concretas também não devem depender de outras classes concretas. 
+Isso é o que nos dá a capacidade de testar o código, porque deixamos o poder para o implementador passar uma dependência simulada se não quisermos fazer chamadas de API ou confiar em algo que não estamos interessados ​​em testar no momento. Então, podemos fazer isso:
+
+```typescript
+class CreateUserController extends BaseController {
+  constructor (private readonly emailService: IMailService) { } //Abstração
+
+  protected execute(): void {
+    // handle request
+    
+    const mail = new Mail(...)
+    this.emailService.sendMail(mail)
+  }
+}
+```
+
+E não isso:
+
+```typescript
+class CreateUserController extends BaseController {
+  constructor (private readonly emailService: SendGridService) { } // <- concreção
+
+  protected execute(): void {
+    // handle request
+    
+    const mail = new Mail(...)
+    this.emailService.sendMail(mail)
+  }
+}
+```
+
+ou pior ainda:
+
+```typescript
+class CreateUserController extends BaseController {
+  private emailService: SendGridService
+  
+  constructor () {
+    // Impossivel fazer mock
+    this.emailService = new SendGridService()
+  }
+
+  protected execute(): void {
+    // handle request
+    
+    const mail = new Mail(...)
+    this.emailService.sendMail(mail)
+  }
+}
 ```
 
 
