@@ -159,7 +159,7 @@ Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender 
 #
 ## **LSP: Liskov Substitution Principle**
 
-<img src="https://thinkdifferent0.files.wordpress.com/2017/07/liskovsubtitutionprinciple_52bb5162.jpg"/>
+<img src="https://blog.larapulse.com/files/original/images/94/e2/94e27bbfb0c7ce8717ea3ac48af39a1dc5755507.png"/>
 
 O LSP afirma que em um programa orientado a objetos, se substituirmos uma referência de objeto da superclasse por um objeto de qualquer uma de suas subclasses, o programa não deve quebrar.
 
@@ -279,7 +279,7 @@ Agora a classe User1 depende apenas da classe User1Operations e não contém mai
 
 #
 ## **DIP: Dependency Inversion Principle**
-<img src="https://mkatkoot.files.wordpress.com/2013/06/dependency_inversion_principle.jpg"/>
+<img src="https://blog.larapulse.com/files/original/images/56/42/564282d4aebf20542b8d78532e6a2d916847af15.png"/>
 
 > Abstrações não devem depender de detalhes. Os detalhes devem depender das abstrações.
 
