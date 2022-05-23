@@ -89,6 +89,11 @@ class IT extends Employee {
 }
 ```
 
+Muito melhor. Cada Employee nesta estrutura social tem um único local onde podemos ir para ajustar seu respectivo algoritmo com maior probabilidade de mudança.
+
+O ponto principal é separar a responsabilidade com base na estrutura social dos usuários que usam a aplicação.
+
+#
 ## **OCP: Open-Closed Principle**
 <img src="https://miro.medium.com/max/1400/1*SpU6T6Zr6OjeD4utxvZzQQ.jpeg"/>
 
