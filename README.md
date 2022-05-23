@@ -4,8 +4,8 @@
 
 A palavra *classe* não implica em que esses principios sejam aplicáveis apenas ao paradigma de orientação a objetos. *classe* é apenas um agrupamento acoplado de funções e dados.
 
-#
 ## **Objetivo**
+
 O objetivo dos princípios é a criação de estruturas de software de nivel médio que:
 
 - Tolerem mudanças;
@@ -14,10 +14,10 @@ O objetivo dos princípios é a criação de estruturas de software de nivel mé
 
 
 
-Bons sistemas começam com um código limpo. Por um lado, se os tijolos não são bem feitos, a arquitetura da construção perde a importancia. Por outro lado, podemos fazer uma bagunça considerável com tijolos bem feitos. É aí que entram os principios SOLID.
+O termo "nível médio" se refere ao fato de que esses princípios são aplicados por programadores que trabalham no nível do módulo. Sua aplicação ocorre logo acima do nível de código e visa definir os tipos de estruturas de software usadas dentro de módulos e componentes.
 
-#
 ## **SRP: Single Responsibility Principle**
+
 <img src="https://miro.medium.com/max/700/1*2lOJXH438qRn_KJpwzxTFw.png"/>
 
 De todos os princípios, o SRP provavelmente é o menos compreendido. 
@@ -53,6 +53,7 @@ class Employee {
   }
 }
 ```
+
 A classe `Employee` viola o SRP porque esses 3 métodos são responsáveis por 3 atores diferentes: RH, Contabilidade e TI.
 
 ```typescript
@@ -89,12 +90,12 @@ class IT extends Employee {
 }
 ```
 
-Muito melhor. Cada Employee nesta estrutura social tem um único local onde podemos ir para ajustar seu respectivo algoritmo com maior probabilidade de mudança.
+Cada Employee nesta estrutura social tem um único local onde podemos ir para ajustar seu respectivo algoritmo com maior probabilidade de mudança.
 
 O ponto principal é separar a responsabilidade com base na estrutura social dos usuários que usam a aplicação.
 
-#
 ## **OCP: Open-Closed Principle**
+
 <img src="https://miro.medium.com/max/1400/1*SpU6T6Zr6OjeD4utxvZzQQ.jpeg"/>
 
 Considerado o princípio mais importante do design de orientação a objeto, basicamente, o OCP nos diz que:
@@ -134,17 +135,21 @@ Seguindo o OCP, poderíamos definir uma interface que especifica o que um servi�
 ```typescript
 // IEmailService.ts
 export interface IMailServiceResult {
-    // ...
+    success: boolean
+  	error?: {
+      message?: string
+      code: string
+    }
 }
 
-export interface Mail {
+export interface IMail {
     from: string
     to: string
     body: string
 }
 
 export interface IMailService {
-    sendMail(mail: Mail): Promise<IMailServiceResult>
+    sendMail(mail: IMail): Promise<IMailServiceResult>
 }
 
 // MailChimpService.ts
@@ -161,7 +166,6 @@ A ideia principal é manter a política separada dos detalhes para permitir o ac
 
 Isso anda de mãos dadas com o DIP (Dependency Inversion Principle) de depender de uma interface em vez de classes concretas, e perto com o LSP (Liskov Substitution Principle) em termos de poder trocar implementações desde que o mesmo tipo/interface esteja sendo dependente.
 
-#
 ## **LSP: Liskov Substitution Principle**
 
 <img src="https://blog.larapulse.com/files/original/images/94/e2/94e27bbfb0c7ce8717ea3ac48af39a1dc5755507.png"/>
@@ -227,9 +231,8 @@ const createUserController = new CreateUserController(sendgridService);
 
 Estamos aderindo ao LSP quando podemos trocar qual implementação de IEmailService estaremos usando.
 
-#
-
 ## **ISP: Interface Segregation Principle**
+
 <img src="https://i1.wp.com/www.topjavatutorial.com/wp-content/uploads/2016/02/Interface-Segregation-Principle.jpg?w=750&ssl=1"/>
 
 > Classes não devem depender de coisas que elas não precisam.
@@ -250,18 +253,23 @@ class Operations {
     emailService: IEmailService,  // Usada apenas por uma das funções
     authService: IAuthService, // Usada por duas funções
     redisService: IRedisService, // Usada por todas funções
-    ... // e outros...  )
+  ) {}
 
-  public op1() {
+  public operation1() {
     // ...
+    this.userRepo.save({})
   }
 
-  public op2() {
+  public operation2() {
     // ...
+    this.emailService.sendMail({})
+    this.userRepo.save({})
   }
 
-  public op3() {
+  public operation3() {
     // ...
+    this.userRepo.save()
+    this.redisService.save({})
   }
 }
 ```
@@ -275,15 +283,17 @@ E agora, se era bastante complicado criar a classe Operations por conta que ela 
 ```typescript
 class User1Operations implements U1Ops {
   constructor (private readonly userRepo: IUserRepo) { }
-  ...
+  
+  public async operation1() {
+    await this.userRepo.save({})
+  }
 }
 ```
 
 Agora a classe User1 depende apenas da classe User1Operations e não contém mais todo o "lixo" da classe Operations.
 
-
-#
 ## **DIP: Dependency Inversion Principle**
+
 <img src="https://blog.larapulse.com/files/original/images/56/42/564282d4aebf20542b8d78532e6a2d916847af15.png"/>
 
 > Abstrações não devem depender de detalhes. Os detalhes devem depender das abstrações.
@@ -295,23 +305,23 @@ Relembrando... Detalhes = Implementação, classes concretas. Abstrações = reg
 Ou seja, em vez de fazer isso:
 
 ```typescript
-interface ITacoService {
-  // Estamos referenciando a classe concreta "User" em uma interface.
-  sendTacos(userSource: User, userDestination: User, amount: number): Promise<SendTacosResult>
+export interface ITacoService {
+  // Estamos referenciando a classe concreta "CommomUser" em uma interface.
+  sendTacos(userSource: CommomUser, userDestination: CommomUser, amount: number): Promise<SendTacosResult>
 }
 ```
 
 Fazemos assim:
 
 ```typescript
-interface ITacoService {
+export interface ITacoService {
   // nenhuma referencia a classes concretas, apenas abstrações e interfaces
   sendTacos(userSource: IUser, userDestination: IUser, amount: number): Promise<ISendTacosResult>
 }
 ```
 
 Classes concretas também não devem depender de outras classes concretas. 
-Isso é o que nos dá a capacidade de testar o código, porque deixamos o poder para o implementador passar uma dependência simulada se não quisermos fazer chamadas de API ou confiar em algo que não estamos interessados ​​em testar no momento. Então, podemos fazer isso:
+Isso é o que nos dá a capacidade de testar o código, porque deixamos o poder para o implementador passar uma dependência simulada se não quisermos fazer chamadas de API ou confiar em algo que não estamos interessados em testar no momento. Então, podemos fazer isso:
 
 ```typescript
 class CreateUserController extends BaseController {
@@ -319,9 +329,7 @@ class CreateUserController extends BaseController {
 
   protected execute(): void {
     // handle request
-    
-    const mail = new Mail(...)
-    this.emailService.sendMail(mail)
+    this.emailService.sendMail({})
   }
 }
 ```
@@ -334,9 +342,7 @@ class CreateUserController extends BaseController {
 
   protected execute(): void {
     // handle request
-    
-    const mail = new Mail(...)
-    this.emailService.sendMail(mail)
+    this.emailService.sendMail({})
   }
 }
 ```
@@ -348,19 +354,16 @@ class CreateUserController extends BaseController {
   private emailService: SendGridService
   
   constructor () {
-    // Impossivel fazer mock
+    // Precisariamos fazer um malabarismo macabro para mockar essa dependencia
     this.emailService = new SendGridService()
   }
 
   protected execute(): void {
     // handle request
-    
-    const mail = new Mail(...)
-    this.emailService.sendMail(mail)
+    this.emailService.sendMail({})
   }
 }
 ```
-
 
 Referencias:
 https://khalilstemmler.com/articles/solid-principles/solid-typescript/
